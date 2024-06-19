@@ -1,12 +1,15 @@
-import mongoose from "mongoose";
+import mysql from 'mysql2/promise';
 
-const Connection = async (url) => {
-  try {
-    await mongoose.connect(url);
-    console.log(`Databse connected successfully`);
-  } catch (error) {
-    console.log(`Error while connecting with the database `, error);
-  }
+const connectDB = async () => {
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+  });
+
+  console.log('MySQL connected successfully');
+  return connection;
 };
 
-export default Connection;
+export default connectDB;
