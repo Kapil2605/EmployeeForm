@@ -29,7 +29,7 @@ app.get('/api/employees', async (req, res) => {
   }
 });
 
-app.post('/api/employees', async (req, res) => {
+app.post('/api/register', async (req, res) => {
   const { fname, lname, email, phone, address } = req.body;
   try {
     const [result] = await db.execute(
