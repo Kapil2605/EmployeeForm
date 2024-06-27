@@ -1,9 +1,9 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import connectDB from './db.js';
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import bodyParser from "body-parser";
+import Connection from "./db.js";
 
 const app = express();
 const port = 5000;
@@ -11,32 +11,37 @@ const port = 5000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+dotenv.config();
 
-let db;
-connectDB().then(connection => {
-  db = connection;
-}).catch(error => {
-  console.error('MySQL connection error:', error);
+// MongoDB connection
+const mongoURI = process.env.MONGO_URI;
+Connection(mongoURI);
+
+const employeeSchema = new mongoose.Schema({
+  fname: String,
+  lname: String,
+  email: String,
+  phone: String,
+  address: String,
 });
 
+const Employee = mongoose.model("Employee", employeeSchema);
+
 // Routes
-app.get('/api/employees', async (req, res) => {
+app.get("/employees", async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM employees');
-    res.json(rows);
+    const employees = await Employee.find();
+    res.json(employees);
   } catch (error) {
     res.status(500).send(error);
   }
 });
 
-app.post('/api/register', async (req, res) => {
-  const { fname, lname, email, phone, address } = req.body;
+app.post("/register", async (req, res) => {
   try {
-    const [result] = await db.execute(
-      'INSERT INTO employees (fname, lname, email, phone, address) VALUES (?, ?, ?, ?, ?)',
-      [fname, lname, email, phone, address]
-    );
-    res.status(201).json({ id: result.insertId, ...req.body });
+    const employee = new Employee(req.body);
+    await employee.save();
+    res.status(201).send(employee);
   } catch (error) {
     res.status(500).send(error);
   }
